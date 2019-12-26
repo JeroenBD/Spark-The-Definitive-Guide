@@ -16,17 +16,11 @@ val query = streaming
   .start()
 
 
-// COMMAND ----------
-
 query.status
 
 
-// COMMAND ----------
-
 query.recentProgress
 
-
-// COMMAND ----------
 
 val spark: SparkSession = ...
 
@@ -43,8 +37,6 @@ spark.streams.addListener(new StreamingQueryListener() {
     }
 })
 
-
-// COMMAND ----------
 
 class KafkaMetrics(servers: String) extends StreamingQueryListener {
   val kafkaProperties = new Properties()
@@ -75,6 +67,4 @@ class KafkaMetrics(servers: String) extends StreamingQueryListener {
 }
 
 
-
-// COMMAND ----------
 

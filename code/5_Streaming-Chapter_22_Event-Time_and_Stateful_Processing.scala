@@ -8,22 +8,12 @@ val streaming = spark
   .json("/data/activity-data")
 
 
-// COMMAND ----------
-
 streaming.printSchema()
 
-
-// COMMAND ----------
-
-// in Scala
 val withEventTime = streaming.selectExpr(
   "*",
   "cast(cast(Creation_Time as double)/1000000000 as timestamp) as event_time")
 
-
-// COMMAND ----------
-
-// in Scala
 import org.apache.spark.sql.functions.{window, col}
 withEventTime.groupBy(window(col("event_time"), "10 minutes")).count()
   .writeStream
@@ -33,14 +23,8 @@ withEventTime.groupBy(window(col("event_time"), "10 minutes")).count()
   .start()
 
 
-// COMMAND ----------
-
 spark.sql("SELECT * FROM events_per_window").printSchema()
 
-
-// COMMAND ----------
-
-// in Scala
 import org.apache.spark.sql.functions.{window, col}
 withEventTime.groupBy(window(col("event_time"), "10 minutes"), "User").count()
   .writeStream
@@ -49,10 +33,6 @@ withEventTime.groupBy(window(col("event_time"), "10 minutes"), "User").count()
   .outputMode("complete")
   .start()
 
-
-// COMMAND ----------
-
-// in Scala
 import org.apache.spark.sql.functions.{window, col}
 withEventTime.groupBy(window(col("event_time"), "10 minutes", "5 minutes"))
   .count()
@@ -62,10 +42,6 @@ withEventTime.groupBy(window(col("event_time"), "10 minutes", "5 minutes"))
   .outputMode("complete")
   .start()
 
-
-// COMMAND ----------
-
-// in Scala
 import org.apache.spark.sql.functions.{window, col}
 withEventTime
   .withWatermark("event_time", "5 hours")
@@ -77,10 +53,6 @@ withEventTime
   .outputMode("complete")
   .start()
 
-
-// COMMAND ----------
-
-// in Scala
 import org.apache.spark.sql.functions.expr
 
 withEventTime
@@ -95,16 +67,12 @@ withEventTime
   .start()
 
 
-// COMMAND ----------
-
 case class InputRow(user:String, timestamp:java.sql.Timestamp, activity:String)
 case class UserState(user:String,
   var activity:String,
   var start:java.sql.Timestamp,
   var end:java.sql.Timestamp)
 
-
-// COMMAND ----------
 
 def updateUserStateWithEvent(state:UserState, input:InputRow):UserState = {
   if (Option(input.timestamp).isEmpty) {
@@ -130,8 +98,6 @@ def updateUserStateWithEvent(state:UserState, input:InputRow):UserState = {
 }
 
 
-// COMMAND ----------
-
 import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode, GroupState}
 def updateAcrossEvents(user:String,
   inputs: Iterator[InputRow],
@@ -152,8 +118,6 @@ def updateAcrossEvents(user:String,
 }
 
 
-// COMMAND ----------
-
 import org.apache.spark.sql.streaming.GroupStateTimeout
 withEventTime
   .selectExpr("User as user",
@@ -168,15 +132,11 @@ withEventTime
   .start()
 
 
-// COMMAND ----------
-
 case class InputRow(device: String, timestamp: java.sql.Timestamp, x: Double)
 case class DeviceState(device: String, var values: Array[Double],
   var count: Int)
 case class OutputRow(device: String, previousAverage: Double)
 
-
-// COMMAND ----------
 
 def updateWithEvent(state:DeviceState, input:InputRow):DeviceState = {
   state.count += 1
@@ -185,8 +145,6 @@ def updateWithEvent(state:DeviceState, input:InputRow):DeviceState = {
   state
 }
 
-
-// COMMAND ----------
 
 import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode,
   GroupState}
@@ -216,8 +174,6 @@ def updateAcrossEvents(device:String, inputs: Iterator[InputRow],
 }
 
 
-// COMMAND ----------
-
 import org.apache.spark.sql.streaming.GroupStateTimeout
 
 withEventTime
@@ -234,8 +190,6 @@ withEventTime
   .start()
 
 
-// COMMAND ----------
-
 case class InputRow(uid:String, timestamp:java.sql.Timestamp, x:Double,
   activity:String)
 case class UserSession(val uid:String, var timestamp:java.sql.Timestamp,
@@ -243,8 +197,6 @@ case class UserSession(val uid:String, var timestamp:java.sql.Timestamp,
 case class UserSessionOutput(val uid:String, var activities: Array[String],
   var xAvg:Double)
 
-
-// COMMAND ----------
 
 def updateWithEvent(state:UserSession, input:InputRow):UserSession = {
   // handle malformed dates
@@ -260,8 +212,6 @@ def updateWithEvent(state:UserSession, input:InputRow):UserSession = {
   state
 }
 
-
-// COMMAND ----------
 
 import org.apache.spark.sql.streaming.{GroupStateTimeout, OutputMode,
   GroupState}
@@ -300,8 +250,6 @@ def updateAcrossEvents(uid:String,
 }
 
 
-// COMMAND ----------
-
 import org.apache.spark.sql.streaming.GroupStateTimeout
 
 withEventTime.where("x is not null")
@@ -318,6 +266,4 @@ withEventTime.where("x is not null")
   .format("memory")
   .start()
 
-
-// COMMAND ----------
 

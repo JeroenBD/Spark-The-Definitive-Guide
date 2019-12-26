@@ -7,5 +7,3 @@ val spark = SparkSession.builder
   .getOrCreate()
 
 
-// COMMAND ----------
-
